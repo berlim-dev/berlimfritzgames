@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aqua Zepelim: Typing Rush Mobile</title>
+    <style>
+        :root {
+            --vib-green: #76ff03;
+            --vib-orange: #ff6d00;
+            --vib-yellow: #ffd600;
+            --deep-blue: #1a237e;
+            --water-accent: #00d2ff;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--deep-blue), var(--vib-orange), var(--vib-green), var(--vib-yellow));
+            background-size: 400% 400%;
+            animation: gradient 20s ease infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: white;
+            overflow: hidden; 
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        #game-container {
+            background: rgba(20, 20, 40, 0.95);
+            padding: 1.5rem;
+            border-radius: 20px;
+            box-shadow: 0 0 20px var(--vib-orange);
+            text-align: center;
+            width: 95%;
+            max-width: 500px;
+            border: 2px solid var(--vib-orange);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            z-index: 10;
+            min-height: 350px;
+        }
+
+        .hidden { display: none !important; }
+
+        h1 { 
+            color: var(--vib-yellow); 
+            text-shadow: 2px 2px var(--vib-orange); 
+            margin-bottom: 15px; 
+            font-style: italic;
+            font-size: 1.8rem;
+        }
+
+        .menu-btn {
+            background: var(--vib-orange);
+            border: none;
+            padding: 15px 20px;
+            margin: 8px 0;
+            color: var(--deep-blue);
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 50px;
+            width: 100%;
+            box-shadow: 0 4px 0 #c45200;
+        }
+
+        .menu-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #c45200; }
+
+        #word-display { 
+            font-size: 2.2rem; 
+            font-weight: 800; 
+            margin: 10px 0; 
+            color: var(--vib-yellow);
+            text-shadow: 1px 1px 5px rgba(0,0,0,0.5);
+        }
+
+        #input-word {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            border-radius: 10px;
+            border: 3px solid var(--vib-green);
+            outline: none;
+            background: rgba(255,255,255,0.95);
+            color: var(--deep-blue);
+            font-weight: bold;
+            text-align: center;
+        }
+
+        #stats { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-bottom: 10px; 
+            font-weight: bold; 
+            color: var(--vib-green);
+        }
+
+        #timer-bar {
+            width: 100%;
+            height: 10px;
+            background: #333;
+            border-radius: 8px;
+            margin-top: 15px;
+            overflow: hidden;
+            border: 1px solid var(--deep-blue);
+        }
+
+        #timer-fill { width: 100%; height: 100%; background: var(--vib-green); transition: width 0.1s linear; }
+
+        .category-tag { color: var(--water-accent); font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
+
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 10, 25, 0.98); border-radius: 20px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 100; padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<audio id="bg-music" loop><source src="musica.mp3" type="audio/mpeg"></audio>
+
+<div id="game-container">
+    <h1 id="game-title">Aqua Zepelim Typing Rush</h1>
+
+    <div id="main-menu">
+        <button class="menu-btn" onclick="showDifficulty()">JOGAR</button>
+    </div>
+
+    <div id="difficulty-menu" class="hidden">
+        <h3>Selecione dificuldade</h3>
+        <button class="menu-btn" style="background: var(--vib-green)" onclick="startGame('facil')">FÁCIL</button>
+        <button class="menu-btn" style="background: var(--vib-yellow)" onclick="startGame('medio')">MÉDIO</button>
+        <button class="menu-btn" style="background: var(--vib-orange)" onclick="startGame('dificil')">DIFÍCIL</button>
+        <button class="menu-btn" style="background: #444; color: #fff" onclick="returnToMainMenuFromDiff()">Voltar</button>
+    </div>
+
+    <div id="game-screen" class="hidden">
+        <div style="text-align: right; margin-bottom: 10px;">
+            <button id="pause-btn" style="background:none; border:1px solid var(--vib-orange); color:var(--vib-orange); border-radius: 5px; padding: 5px 10px; cursor:pointer;" onclick="togglePause()">II</button>
+        </div>
+        <div id="stats">
+            <span>PTS: <span id="score" style="color:var(--vib-yellow)">0</span></span>
+            <span id="level-name">---</span>
+        </div>
+        <div class="category-tag" id="category-display">CATEGORIA</div>
+        <div id="word-display">PALAVRA</div>
+        <input type="text" id="input-word" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Digite exatamente...">
+        <div id="timer-bar"><div id="timer-fill"></div></div>
+
+        <div id="pause-overlay" class="overlay hidden">
+            <h2 style="color: var(--vib-orange)">PAUSADO</h2>
+            <button class="menu-btn" onclick="togglePause()">RETOMAR</button>
+            <button class="menu-btn" style="background:none; border:2px solid var(--vib-orange); color:var(--vib-orange)" onclick="returnToMenu()">SAIR</button>
+        </div>
+    </div>
+
+    <div id="game-over" class="hidden overlay">
+        <h2 style="color: var(--vib-orange)">FIM DE JOGO</h2>
+        <p>Pontos: <span id="final-score" style="color: var(--vib-yellow); font-size: 2rem">0</span></p>
+        <button class="menu-btn" onclick="restartGame()">REPETIR</button>
+        <button class="menu-btn" style="background:none; border:2px solid var(--vib-orange); color:var(--vib-orange)" onclick="returnToMenu()">MENU</button>
+    </div>
+</div>
+
+<script>
+    const bgMusic = document.getElementById('bg-music');
+    const inputField = document.getElementById('input-word');
+    
+    const database = {
+        facil: [
+            {w: "Rio", c: "Água"}, {w: "Mar", c: "Água"}, {w: "Lago", c: "Água"},
+            {w: "Led", c: "Arduino"}, {w: "Uno", c: "Arduino"}, {w: "Fio", c: "Arduino"},
+            {w: "Pino", c: "Arduino"}, {w: "Doce", c: "Tipo"}, {w: "Sal", c: "Tipo"},
+            {w: "Cais", c: "Água"}, {w: "Onda", c: "Água"}, {w: "Boia", c: "Água"},
+            {w: "Porta", c: "Arduino"}, {w: "Code", c: "Arduino"}, {w: "Gelo", c: "Água"},
+            {w: "Nuvem", c: "Água"}, {w: "Poço", c: "Água"}, {w: "Vapor", c: "Água"}
+        ],
+        medio: [
+            {w: "Oceano", c: "Água"}, {w: "Sensor", c: "Arduino"}, {w: "Mineral", c: "Tipo"},
+            {w: "Buzzer", c: "Arduino"}, {w: "Módulo", c: "Arduino"}, {w: "Botão", c: "Arduino"},
+            {w: "Córrego", c: "Água"}, {w: "Cascata", c: "Água"}, {w: "Aquário", c: "Água"},
+            {w: "Jumper", c: "Arduino"}, {w: "Display", c: "Arduino"}, {w: "Relé", c: "Arduino"},
+            {w: "Pureza", c: "Tipo"}, {w: "Fluvial", c: "Água"}, {w: "Chuva", c: "Água"},
+            {w: "Servo", c: "Arduino"}, {w: "Cristal", c: "Tipo"}, {w: "Turbidez", c: "Tipo"}
+        ],
+        dificil: [
+            {w: "Arquipélago", c: "Água"}, {w: "Microcontrolador", c: "Arduino"},
+            {w: "Potenciômetro", c: "Arduino"}, {w: "Protoboard", c: "Arduino"},
+            {w: "Hidroelétrica", c: "Água"}, {w: "Deionizada", c: "Tipo"},
+            {w: "Condutividade", c: "Tipo"}, {w: "Osciloscópio", c: "Arduino"},
+            {w: "Transistor", c: "Arduino"}, {w: "Sustentabilidade", c: "Tipo"},
+            {w: "Capacitância", c: "Arduino"}, {w: "Ecossistema", c: "Água"},
+            {w: "Microprocessador", c: "Arduino"}, {w: "Saneamento", c: "Água"},
+            {w: "Piezoelétrico", c: "Arduino"}, {w: "Filtração", c: "Tipo"}
+        ]
+    };
+
+    let currentDifficulty = '', score = 0, currentWordObj = {}, timer, timeLeft, maxTime, isPaused = false, usedWords = [];
+
+    function showDifficulty() {
+        document.getElementById('main-menu').classList.add('hidden');
+        document.getElementById('difficulty-menu').classList.remove('hidden');
+    }
+
+    function returnToMainMenuFromDiff() {
+        document.getElementById('difficulty-menu').classList.add('hidden');
+        document.getElementById('main-menu').classList.remove('hidden');
+    }
+
+    function returnToMenu() {
+        clearInterval(timer);
+        bgMusic.pause();
+        bgMusic.currentTime = 0;
+        isPaused = false;
+        document.getElementById('game-screen').classList.add('hidden');
+        document.getElementById('game-over').classList.add('hidden');
+        document.getElementById('pause-overlay').classList.add('hidden');
+        document.getElementById('main-menu').classList.remove('hidden');
+    }
+
+    function startGame(diff) {
+        currentDifficulty = diff;
+        score = 0;
+        usedWords = [];
+        isPaused = false;
+        maxTime = diff === 'facil' ? 8 : diff === 'medio' ? 7 : 6;
+        
+        document.getElementById('score').innerText = score;
+        document.getElementById('level-name').innerText = diff.toUpperCase();
+        document.getElementById('difficulty-menu').classList.add('hidden');
+        document.getElementById('game-over').classList.add('hidden');
+        document.getElementById('pause-overlay').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        
+        bgMusic.play().catch(() => {});
+        nextWord();
+    }
+
+    function togglePause() {
+        isPaused = !isPaused;
+        const overlay = document.getElementById('pause-overlay');
+        if (isPaused) {
+            clearInterval(timer);
+            bgMusic.pause();
+            overlay.classList.remove('hidden');
+            inputField.blur();
+        } else {
+            overlay.classList.add('hidden');
+            bgMusic.play().catch(() => {});
+            inputField.focus();
+            startTimer();
+        }
+    }
+
+    function nextWord() {
+        clearInterval(timer);
+        inputField.value = "";
+        setTimeout(() => inputField.focus(), 50);
+        
+        let list = database[currentDifficulty];
+        
+        // Reinicia a lista de palavras usadas se todas já foram exibidas
+        if (usedWords.length >= list.length) usedWords = [];
+        
+        let available = list.filter(word => !usedWords.includes(word.w));
+        currentWordObj = available[Math.floor(Math.random() * available.length)];
+        
+        usedWords.push(currentWordObj.w);
+        
+        document.getElementById('word-display').innerText = currentWordObj.w;
+        document.getElementById('category-display').innerText = currentWordObj.c;
+        timeLeft = maxTime;
+        startTimer();
+    }
+
+    function startTimer() {
+        timer = setInterval(() => {
+            timeLeft -= 0.05;
+            const p = (timeLeft / maxTime) * 100;
+            document.getElementById('timer-fill').style.width = p + "%";
+            if (timeLeft <= 0) gameOver();
+        }, 50);
+    }
+
+    // VERIFICAÇÃO EXATA (MAIÚSCULAS E ACENTOS)
+    inputField.addEventListener('input', () => {
+        if (!isPaused && inputField.value === currentWordObj.w) {
+            score += 10;
+            document.getElementById('score').innerText = score;
+            nextWord();
+        }
+    });
+
+    function gameOver() {
+        clearInterval(timer);
+        bgMusic.pause();
+        document.getElementById('game-over').classList.remove('hidden');
+        document.getElementById('final-score').innerText = score;
+    }
+
+    function restartGame() {
+        startGame(currentDifficulty);
+    }
+</script>
+</body>
+</html>
