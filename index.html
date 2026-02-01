@@ -20,6 +20,8 @@
             --sky-blue: #5acbff;
             --sea-blue: #0080ff;
             --sand-color: #f4b41b;
+            --danger-red: #ff0033;
+            --ghost-color: #cfd8dc; /* Cor para o modo fantasma */
         }
 
         * { box-sizing: border-box; }
@@ -48,7 +50,6 @@
             height: 100%;
             z-index: 1;
             overflow: hidden;
-            /* Fundo Base */
             background: linear-gradient(to bottom, 
                 var(--sky-blue) 0%, 
                 var(--sky-blue) 60%, 
@@ -57,17 +58,15 @@
                 var(--sand-color) 80%);
         }
 
-        /* Camada de Textura Pixelada (Céu) */
         .pixel-background::before {
             content: "";
             position: absolute;
             top: 0; left: 0; width: 100%; height: 60%;
             background-image: repeating-conic-gradient(rgba(255,255,255,0.05) 0% 25%, transparent 0% 50%);
-            background-size: 8px 8px; /* Tamanho do pixel */
+            background-size: 8px 8px;
             pointer-events: none;
         }
 
-        /* Nuvens Pixeladas */
         .cloud {
             position: absolute;
             background: white;
@@ -83,7 +82,6 @@
             to { transform: translateX(100vw); }
         }
 
-        /* Ondas Pixeladas */
         .waves {
             position: absolute;
             top: 60%;
@@ -108,7 +106,6 @@
         }
 
         #game-container {
-            /* Fundo Azul com textura 8-bit sutil */
             background-color: #06b5fa;
             background-image: 
                 linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.1) 75%, rgba(255,255,255,0.1)),
@@ -117,12 +114,11 @@
             background-position: 0 0, 5px 5px;
             
             padding: 1.5rem;
-            border-radius: 0px; /* Estilo retro prefere cantos retos ou blocos */
+            border-radius: 0px; 
             text-align: center;
             width: 95%;
             max-width: 500px;
             
-            /* Borda Laranja Pixel Art */
             border: 6px solid var(--vib-orange);
             border-image:  repeating-linear-gradient(0deg, var(--vib-orange), var(--vib-orange) 4px, #ff9e40 4px, #ff9e40 8px) 6;
             
@@ -138,7 +134,7 @@
 
         h1 { 
             color: var(--vib-yellow); 
-            text-shadow: 4px 4px 0px var(--vib-orange); /* Sombra pixelada */
+            text-shadow: 4px 4px 0px var(--vib-orange);
             margin-bottom: 15px; 
             font-style: italic;
             font-size: 1.8rem;
@@ -153,13 +149,12 @@
             font-size: 1.1rem;
             font-weight: bold;
             cursor: pointer;
-            border-radius: 0; /* Botões quadrados para o estilo 8-bit */
+            border-radius: 0;
             width: 100%;
             box-shadow: 0 6px 0 #c45200;
             position: relative;
         }
 
-        /* Efeito de brilho 8-bit no topo do botão */
         .menu-btn::after {
             content: '';
             position: absolute;
@@ -188,6 +183,12 @@
             margin: 10px 0; 
             color: var(--vib-yellow);
             text-shadow: 3px 3px 0px rgba(0,0,0,1);
+            transition: opacity 0.5s ease-in-out; /* Adicionado para suavizar a transparência */
+        }
+        
+        /* ESTILO DO MODO FANTASMA */
+        .ghost-fade {
+            opacity: 0 !important;
         }
 
         #input-word {
@@ -201,6 +202,26 @@
             color: var(--deep-blue);
             font-weight: bold;
             text-align: center;
+            transition: background 0.05s;
+        }
+
+        .flash-hit {
+            background-color: var(--vib-green) !important;
+            color: var(--deep-blue) !important;
+        }
+        
+        .flash-miss {
+            background-color: var(--danger-red) !important;
+            color: white !important;
+            border-color: var(--danger-red) !important;
+            animation: shake-dry 0.1s steps(2);
+        }
+
+        @keyframes shake-dry {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+            100% { transform: translateX(0); }
         }
 
         @keyframes shake {
@@ -210,7 +231,7 @@
             60% { transform: translateX(-10px); }
             80% { transform: translateX(10px); }
         }
-        .shake { animation: shake 0.4s steps(4) both; } /* Movimento travado/retro */
+        .shake { animation: shake 0.4s steps(4) both; }
 
         #combo-display {
             font-size: 1.2rem;
@@ -218,6 +239,14 @@
             min-height: 25px;
             margin-top: 5px;
             text-shadow: 2px 2px 0px rgba(0,0,0,1);
+        }
+
+        .combo-pulse {
+            animation: pulse-arcade 0.3s steps(2) infinite alternate;
+        }
+        @keyframes pulse-arcade {
+            from { transform: scale(1); opacity: 1; }
+            to { transform: scale(1.05); opacity: 0.85; text-shadow: 2px 2px 0px rgba(255,255,255,0.5); }
         }
 
         #stats { 
@@ -236,7 +265,12 @@
             border: 2px solid var(--deep-blue);
         }
 
-        #timer-fill { width: 100%; height: 100%; background: var(--vib-green); }
+        #timer-fill { 
+            width: 100%; 
+            height: 100%; 
+            background: var(--vib-green); 
+            transition: background 0.2s steps(4); 
+        }
 
         .category-tag { color: var(--water-accent); font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
 
@@ -245,6 +279,14 @@
             background: rgba(0, 0, 0, 0.98);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             z-index: 100; padding: 20px;
+        }
+        
+        /* Estilos específicos para a aba Eco Fantasma (herdados mas especificados para garantir layout) */
+        #ghost-intro h3 {
+            color: var(--ghost-color);
+            text-shadow: 2px 2px 0px #455a64;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -294,7 +336,24 @@
         <button class="menu-btn" style="background: var(--vib-green)" onclick="playSound('click'); startGame('facil')"><span class="txt-easy">FÁCIL</span></button>
         <button class="menu-btn" style="background: var(--vib-yellow)" onclick="playSound('click'); startGame('medio')"><span class="txt-medium">MÉDIO</span></button>
         <button class="menu-btn" style="background: var(--vib-orange)" onclick="playSound('click'); startGame('dificil')"><span class="txt-hard">DIFÍCIL</span></button>
+        
+        <button class="menu-btn" style="background: var(--ghost-color); color: #263238;" onclick="playSound('click'); showGhostIntro()">
+            <span>Eco Fantasma 👻</span>
+        </button>
+
         <button class="menu-btn" style="background: #444; color: #fff" onclick="playSound('click'); returnToMainMenuFromDiff()"><span class="txt-back">Voltar</span></button>
+    </div>
+
+    <div id="ghost-intro" class="hidden">
+        <h3>MODO ECO FANTASMA 👻</h3>
+        <p style="margin: 20px 0; line-height: 1.6;">
+            Uma palavra aparece normalmente.<br>
+            Após 2 segundos, ela fica transparente.<br>
+            Digite o restante de memória.<br><br>
+            Boa sorte!
+        </p>
+        <button class="menu-btn" onclick="playSound('click'); startGame('ghost')">JOGAR</button>
+        <button class="menu-btn" style="background: #444; color: #fff" onclick="playSound('click'); hideGhostIntro()">VOLTAR</button>
     </div>
 
     <div id="game-screen" class="hidden">
@@ -327,13 +386,15 @@
 </div>
 
 <script>
-    // Código Javascript original...
     const bgMusic = document.getElementById('bg-music');
     const inputField = document.getElementById('input-word');
     const comboDisplay = document.getElementById('combo-display');
+    const wordDisplay = document.getElementById('word-display'); // Referência direta
     
     let gameOptions = { ignoreAccents: false, volume: true, lang: 'pt' };
     let comboCount = 0;
+    let lastInputLen = 0; 
+    let ghostTimer; // Variável para o timer do fantasma
 
     const database = {
         facil: [
@@ -408,6 +469,10 @@
             osc.frequency.value = 600;
             gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
             osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        } else if (type === 'blip') { 
+            osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.05);
         } else if (type === 'correct') {
             osc.frequency.setValueAtTime(800, audioCtx.currentTime);
             gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
@@ -431,6 +496,17 @@
         document.getElementById('main-menu').classList.add('hidden');
         document.getElementById('credits-menu').classList.remove('hidden');
     }
+    
+    // Novas funções para o modo Eco Fantasma
+    function showGhostIntro() {
+        document.getElementById('difficulty-menu').classList.add('hidden');
+        document.getElementById('ghost-intro').classList.remove('hidden');
+    }
+    function hideGhostIntro() {
+        document.getElementById('ghost-intro').classList.add('hidden');
+        document.getElementById('difficulty-menu').classList.remove('hidden');
+    }
+
     function returnToMainMenuFromDiff() {
         document.getElementById('difficulty-menu').classList.add('hidden');
         document.getElementById('main-menu').classList.remove('hidden');
@@ -464,6 +540,7 @@
 
     function returnToMenu() {
         clearInterval(timer);
+        clearTimeout(ghostTimer); // Limpa timer fantasma ao sair
         bgMusic.pause();
         bgMusic.currentTime = 0;
         isPaused = false;
@@ -474,22 +551,27 @@
     }
 
     function updateComboDisplay() {
+        comboDisplay.classList.remove('combo-pulse');
+        
         if (comboCount > 1) {
             comboDisplay.innerText = `COMBO x${comboCount}`;
+            void comboDisplay.offsetWidth;
+            comboDisplay.classList.add('combo-pulse');
+
             if (comboCount < 5) comboDisplay.style.color = "var(--vib-yellow)";
             else if (comboCount < 10) comboDisplay.style.color = "var(--vib-orange)";
             else comboDisplay.style.color = "var(--vib-green)";
-            comboDisplay.style.transform = "scale(1.2)";
-            setTimeout(() => comboDisplay.style.transform = "scale(1)", 100);
-        } else { comboDisplay.innerText = ""; }
+        } else { 
+            comboDisplay.innerText = ""; 
+        }
     }
 
     function triggerError() {
         comboCount = 0;
         updateComboDisplay();
         playSound('error');
-        inputField.classList.add('shake');
-        setTimeout(() => inputField.classList.remove('shake'), 400);
+        inputField.classList.add('flash-miss');
+        setTimeout(() => inputField.classList.remove('flash-miss'), 150);
     }
 
     function startGame(diff) {
@@ -499,10 +581,13 @@
         updateComboDisplay();
         usedWords = [];
         isPaused = false;
-        maxTime = diff === 'facil' ? 8 : diff === 'medio' ? 7 : 6;
+        // Configuração de tempo para modo Ghost baseada no modo Dificil
+        maxTime = (diff === 'facil') ? 8 : (diff === 'medio') ? 7 : 6;
+        
         document.getElementById('score').innerText = score;
-        document.getElementById('level-name').innerText = diff.toUpperCase();
+        document.getElementById('level-name').innerText = diff === 'ghost' ? 'FANTASMA' : diff.toUpperCase();
         document.getElementById('difficulty-menu').classList.add('hidden');
+        document.getElementById('ghost-intro').classList.add('hidden'); // Garante que a intro suma
         document.getElementById('game-over').classList.add('hidden');
         document.getElementById('pause-overlay').classList.add('hidden');
         document.getElementById('game-screen').classList.remove('hidden');
@@ -515,6 +600,7 @@
         const overlay = document.getElementById('pause-overlay');
         if (isPaused) {
             clearInterval(timer);
+            clearTimeout(ghostTimer); // Pausa timer do fantasma também
             bgMusic.pause();
             overlay.classList.remove('hidden');
             inputField.blur();
@@ -523,29 +609,63 @@
             if (gameOptions.volume) bgMusic.play().catch(() => {});
             inputField.focus();
             startTimer();
+            // Retoma timer fantasma se necessário
+            if (currentDifficulty === 'ghost') {
+                 // Simplificação: Reinicia o timer de 2s se despausar, para não penalizar injustamente
+                 ghostTimer = setTimeout(() => {
+                    wordDisplay.classList.add('ghost-fade');
+                }, 2000);
+            }
         }
     }
 
     function nextWord() {
         clearInterval(timer);
+        clearTimeout(ghostTimer); // Limpa timer anterior do fantasma
+        wordDisplay.classList.remove('ghost-fade'); // Reseta opacidade
+        
         inputField.value = "";
+        lastInputLen = 0;
+        inputField.classList.remove('flash-hit', 'flash-miss');
         setTimeout(() => inputField.focus(), 50);
-        let list = database[currentDifficulty];
+        
+        // Seleciona lista. Se for ghost, usa a lista difícil.
+        let poolKey = currentDifficulty === 'ghost' ? 'dificil' : currentDifficulty;
+        let list = database[poolKey];
+        
         if (usedWords.length >= list.length) usedWords = [];
         let available = list.filter(word => !usedWords.includes(word.w));
         currentWordObj = available[Math.floor(Math.random() * available.length)];
         usedWords.push(currentWordObj.w);
-        document.getElementById('word-display').innerText = currentWordObj.w;
+        wordDisplay.innerText = currentWordObj.w;
         document.getElementById('category-display').innerText = currentWordObj.c;
         timeLeft = maxTime;
         startTimer();
+
+        // Lógica Eco Fantasma
+        if (currentDifficulty === 'ghost') {
+            ghostTimer = setTimeout(() => {
+                wordDisplay.classList.add('ghost-fade');
+            }, 2000);
+        }
     }
 
     function startTimer() {
         timer = setInterval(() => {
             timeLeft -= 0.05;
             const p = (timeLeft / maxTime) * 100;
-            document.getElementById('timer-fill').style.width = p + "%";
+            const fill = document.getElementById('timer-fill');
+            
+            fill.style.width = p + "%";
+            
+            if (p > 50) {
+                fill.style.background = 'var(--vib-green)';
+            } else if (p < 30 && p >= 10) {
+                fill.style.background = 'var(--vib-orange)';
+            } else if (p < 10) {
+                fill.style.background = 'var(--danger-red)';
+            }
+
             if (timeLeft <= 0) gameOver();
         }, 50);
     }
@@ -556,9 +676,27 @@
         if (isPaused) return;
         let val = inputField.value;
         let target = currentWordObj.w;
-        if (gameOptions.ignoreAccents) { val = normalizeStr(val); target = normalizeStr(target); }
-        if (!target.startsWith(val) && val.length > 0) { triggerError(); }
-        if (val === target) {
+        
+        let checkVal = val;
+        let checkTarget = target;
+        if (gameOptions.ignoreAccents) { 
+            checkVal = normalizeStr(val); 
+            checkTarget = normalizeStr(target); 
+        }
+
+        if (checkTarget.startsWith(checkVal)) {
+            if (val.length > lastInputLen) {
+                 inputField.classList.add('flash-hit');
+                 setTimeout(() => inputField.classList.remove('flash-hit'), 50);
+                 playSound('blip');
+            }
+        } else if (val.length > 0) {
+            triggerError();
+        }
+        
+        lastInputLen = val.length;
+
+        if (checkVal === checkTarget) {
             score += 10 + Math.min(comboCount, 5);
             comboCount++;
             playSound('correct');
@@ -570,6 +708,7 @@
 
     function gameOver() {
         clearInterval(timer);
+        clearTimeout(ghostTimer); // Limpa fantasma
         bgMusic.pause();
         comboCount = 0;
         document.getElementById('game-over').classList.remove('hidden');
